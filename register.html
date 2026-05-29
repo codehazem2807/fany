@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل فني جديد - دليل خدمات الإسكندرية</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f2b3d;
+            --secondary: #00b4d8;
+            --accent: #f4a261;
+            --success: #2a9d8f;
+            --gradient: linear-gradient(135deg, #0f2b3d 0%, #1b4a6e 100%);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .register-card { background: white; border-radius: 30px; padding: 40px; margin: 20px 0; box-shadow: var(--shadow-lg); animation: fadeInUp 0.6s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 10px; font-size: 28px; }
+        .subtitle { text-align: center; color: #64748b; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary); }
+        .required::after { content: '*'; color: #ef4444; margin-right: 4px; }
+        input, select, textarea { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
+        input:focus, select:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(0,180,216,0.1); }
+        .btn { width: 100%; padding: 14px; background: var(--gradient); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .alert { padding: 15px; border-radius: 12px; margin-bottom: 20px; display: none; }
+        .alert.show { display: block; }
+        .alert-success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .login-link { text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+        .login-link a { color: var(--secondary); text-decoration: none; font-weight: 600; }
+        .loading { display: none; text-align: center; margin-top: 15px; }
+        .loading.show { display: block; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; gap: 0; } .register-card { padding: 25px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="register-card">
+            <h1><i class="fas fa-user-plus" style="color: var(--accent);"></i> انضم إلينا</h1>
+            <p class="subtitle">سجل حسابك كفني واستقبل طلبات العملاء</p>
+            <div id="alertMessage" class="alert"></div>
+            <form id="registerForm">
+                <div class="form-group"><label class="required"><i class="fas fa-user"></i> الاسم بالكامل</label><input type="text" id="fullName" placeholder="مثال: أحمد محمد علي"></div>
+                <div class="form-row">
+                    <div class="form-group"><label class="required"><i class="fas fa-envelope"></i> البريد الإلكتروني</label><input type="email" id="email" placeholder="example@email.com"></div>
+                    <div class="form-group"><label class="required"><i class="fas fa-phone"></i> رقم الهاتف</label><input type="tel" id="phone" placeholder="01234567890"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="required"><i class="fab fa-whatsapp"></i> رقم واتساب (اختياري)</label><input type="tel" id="whatsapp" placeholder="01234567890"></div>
+                    <div class="form-group"><label class="required"><i class="fas fa-tools"></i> التخصص</label><select id="categoryId"><option value="">اختر التخصص</option></select></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="required"><i class="fas fa-map-marker-alt"></i> المنطقة</label><select id="areaId"><option value="">اختر المنطقة</option></select></div>
+                    <div class="form-group"><label><i fa-regular fa-calendar></i> سنوات الخبرة</label><input type="number" id="experienceYears" placeholder="0" min="0" max="50"></div>
+                </div>
+                <div class="form-group"><label><i class="fas fa-info-circle"></i> نبذة عنك</label><textarea id="bio" rows="3" placeholder="اكتب عن خبراتك ومهاراتك..."></textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label class="required"><i class="fas fa-lock"></i> كلمة المرور</label><input type="password" id="password" placeholder="••••••••"></div>
+                    <div class="form-group"><label class="required"><i class="fas fa-lock"></i> تأكيد كلمة المرور</label><input type="password" id="confirmPassword" placeholder="••••••••"></div>
+                </div>
+                <div class="form-group"><label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="terms" style="width: auto;"><span>أوافق على <a href="#" style="color: var(--secondary);">الشروط والأحكام</a></span></label></div>
+                <button type="submit" class="btn" id="submitBtn"><i class="fas fa-user-plus"></i> تسجيل حساب فني</button>
+                <div class="loading" id="loading"><div class="spinner"></div><p>جاري إنشاء الحساب...</p></div>
+            </form>
+            <div class="login-link">لديك حساب بالفعل؟ <a href="login.html"><i class="fas fa-sign-in-alt"></i> سجل دخول</a></div>
+        </div>
+    </div>
+    <script>
+        const SUPABASE_URL = 'https://gztqvuwxhjiwaxttzhtk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6dHF2dXd4aGppd2F4dHR6aHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDAxOTksImV4cCI6MjA5NTU3NjE5OX0.Pt7inMLxyyLFavqtgSHPQbpt4FRYK6TV5IUntoyLzT0';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function loadCategories() {
+            const { data: categories } = await supabaseClient.from('categories').select('*').eq('is_active', true);
+            const select = document.getElementById('categoryId');
+            categories?.forEach(cat => { const option = document.createElement('option'); option.value = cat.id; option.textContent = cat.name; select.appendChild(option); });
+        }
+        
+        async function loadAreas() {
+            const { data: areas } = await supabaseClient.from('areas').select('*').order('display_order');
+            const select = document.getElementById('areaId');
+            areas?.forEach(area => { const option = document.createElement('option'); option.value = area.id; option.textContent = area.name; select.appendChild(option); });
+        }
+        
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.className = `alert alert-${type} show`;
+            alertDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+            setTimeout(() => alertDiv.classList.remove('show'), 4000);
+        }
+        
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const categoryId = document.getElementById('categoryId').value;
+            const areaId = document.getElementById('areaId').value;
+            const experienceYears = parseInt(document.getElementById('experienceYears').value) || 0;
+            const bio = document.getElementById('bio').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const terms = document.getElementById('terms').checked;
+            
+            if (fullName.length < 3) { showAlert('الرجاء إدخال الاسم بالكامل (3 أحرف على الأقل)', 'error'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlert('الرجاء إدخال بريد إلكتروني صحيح', 'error'); return; }
+            if (!/^01[0-9]{9}$/.test(phone)) { showAlert('الرجاء إدخال رقم هاتف صحيح (11 رقم يبدأ بـ 01)', 'error'); return; }
+            if (!categoryId) { showAlert('الرجاء اختيار التخصص', 'error'); return; }
+            if (!areaId) { showAlert('الرجاء اختيار المنطقة', 'error'); return; }
+            if (password.length < 6) { showAlert('كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error'); return; }
+            if (password !== confirmPassword) { showAlert('كلمة المرور غير متطابقة', 'error'); return; }
+            if (!terms) { showAlert('الرجاء الموافقة على الشروط والأحكام', 'error'); return; }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            submitBtn.disabled = true;
+            loading.classList.add('show');
+            
+            try {
+                const { data: existing } = await supabaseClient.from('technicians').select('email').eq('email', email).single();
+                if (existing) { showAlert('هذا البريد الإلكتروني مسجل بالفعل', 'error'); submitBtn.disabled = false; loading.classList.remove('show'); return; }
+                
+                const { data: newTech, error } = await supabaseClient.from('technicians').insert({ 
+                    full_name: fullName, email: email, phone: phone, whatsapp: whatsapp || null, 
+                    category_id: categoryId, area_id: areaId, experience_years: experienceYears, 
+                    bio: bio || null, password: password, is_available: true 
+                }).select().single();
+                if (error) throw error;
+                
+                localStorage.setItem('currentUser', JSON.stringify({ id: newTech.id, email: email, fullName: fullName, role: 'technician' }));
+                showAlert('✅ تم تسجيل حسابك بنجاح! جاري تحويلك إلى لوحة التحكم...', 'success');
+                setTimeout(() => window.location.href = 'dashboard.html', 2000);
+            } catch (error) { showAlert(error.message || 'حدث خطأ في تسجيل الحساب', 'error'); submitBtn.disabled = false; loading.classList.remove('show'); }
+        });
+        
+        loadCategories();
+        loadAreas();
+    </script>
+</body>
+</html>

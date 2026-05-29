@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل الفني - دليل خدمات الإسكندرية</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0f2b3d;
+            --secondary: #00b4d8;
+            --accent: #f4a261;
+            --success: #2a9d8f;
+            --danger: #e76f51;
+            --gradient: linear-gradient(135deg, #0f2b3d 0%, #1b4a6e 100%);
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.07);
+            --shadow-md: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: #f5f7fb; }
+        
+        .header { background: var(--gradient); position: fixed; width: 100%; top: 0; z-index: 1000; box-shadow: var(--shadow-md); }
+        .header.scrolled { padding: 0.5rem 0; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 30px; }
+        .navbar { padding: 1rem 0; }
+        .nav-content { display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { font-size: 2rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .logo a { color: white; text-decoration: none; font-size: 1.5rem; font-weight: 800; }
+        .logo span { color: var(--accent); }
+        .nav-menu { display: flex; gap: 2rem; list-style: none; align-items: center; }
+        .nav-menu a { color: white; text-decoration: none; font-weight: 600; }
+        .mobile-menu-btn { display: none; background: none; border: none; cursor: pointer; }
+        .mobile-menu-btn span { display: block; width: 25px; height: 3px; background: white; margin: 5px 0; }
+        
+        .technician-details { background: white; border-radius: 30px; padding: 40px; margin: 100px 0 40px; box-shadow: var(--shadow-lg); }
+        .details-header { display: grid; grid-template-columns: auto 1fr; gap: 40px; margin-bottom: 40px; }
+        .details-image { width: 280px; height: 280px; background: var(--gradient); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 6rem; position: relative; overflow: hidden; }
+        .details-image img { width: 100%; height: 100%; object-fit: cover; }
+        .featured-badge { position: absolute; top: 15px; left: 15px; background: var(--accent); color: white; padding: 8px 15px; border-radius: 30px; font-size: 12px; font-weight: 600; }
+        .verified-badge { position: absolute; top: 15px; right: 15px; background: var(--success); color: white; padding: 8px 15px; border-radius: 30px; font-size: 12px; font-weight: 600; }
+        .details-info h1 { font-size: 2rem; color: var(--primary); margin-bottom: 10px; }
+        .rating-large { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stars { color: var(--accent); font-size: 1.2rem; letter-spacing: 2px; }
+        .rating-number { font-size: 1.1rem; font-weight: 600; color: var(--primary); }
+        .reviews-count { color: #64748b; font-size: 0.9rem; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 25px 0; }
+        .info-item { padding: 15px; background: #f8fafc; border-radius: 15px; }
+        .info-label { font-weight: 600; color: var(--primary); display: block; margin-bottom: 5px; font-size: 0.9rem; }
+        .info-value { color: #64748b; font-size: 1.1rem; }
+        .phone-number-copy { cursor: pointer; display: inline-flex; align-items: center; gap: 8px; background: #e2e8f0; padding: 5px 12px; border-radius: 20px; }
+        .phone-number-copy:hover { background: var(--secondary); color: white; }
+        .contact-buttons { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        .btn { padding: 14px 28px; border: none; border-radius: 15px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: all 0.3s; }
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .btn-success { background: #25D366; color: white; }
+        .btn-outline { background: white; border: 2px solid var(--secondary); color: var(--secondary); }
+        .btn-outline:hover { background: var(--secondary); color: white; }
+        .details-bio { margin: 30px 0; padding: 25px; background: #f8fafc; border-radius: 20px; }
+        .reviews-section h3 { color: var(--primary); margin-bottom: 20px; font-size: 1.3rem; }
+        .review-card { background: #f8fafc; padding: 20px; border-radius: 15px; margin-bottom: 15px; }
+        .review-header { display: flex; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        .review-stars { color: var(--accent); }
+        .toast-message { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 50px; z-index: 2000; opacity: 0; transition: opacity 0.3s; }
+        .toast-message.show { opacity: 1; }
+        .toast-message.error { background: var(--danger); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .modal-content { background: white; margin: 10% auto; padding: 30px; width: 90%; max-width: 500px; border-radius: 25px; position: relative; }
+        .close { position: absolute; left: 20px; top: 20px; font-size: 28px; cursor: pointer; }
+        .rating-stars { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+        .star { font-size: 35px; cursor: pointer; color: #cbd5e1; transition: all 0.2s; }
+        .star.active { color: var(--accent); transform: scale(1.1); }
+        .loading { text-align: center; padding: 50px; }
+        .spinner { width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top: 4px solid var(--secondary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer { background: #0f172a; color: white; padding: 3rem 0 1rem; margin-top: 4rem; text-align: center; }
+        @media (max-width: 768px) {
+            .nav-menu { display: none; width: 100%; flex-direction: column; background: var(--primary); padding: 1rem; border-radius: 15px; }
+            .nav-menu.active { display: flex; }
+            .mobile-menu-btn { display: block; }
+            .details-header { grid-template-columns: 1fr; text-align: center; }
+            .details-image { margin: 0 auto; width: 200px; height: 200px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="toastMessage" class="toast-message"></div>
+    
+    <header class="header" id="header">
+        <div class="container">
+            <div class="navbar">
+                <div class="nav-content">
+                    <div class="logo"><span class="logo-icon">🛠️</span><a href="index.html">دليل خدمات <span>الإسكندرية</span></a></div>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn"><span></span><span></span><span></span></button>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="technicians.html">الفنيين</a></li>
+                        <li id="authLinks"><a href="login.html">دخول</a><a href="register.html">تسجيل</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container"><div id="technicianDetails" class="loading"><div class="spinner"></div><p>جاري التحميل...</p></div></div>
+    
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 style="color: var(--primary);">أضف تقييمك</h2>
+            <form id="reviewForm">
+                <div class="form-group"><label>اسمك</label><input type="text" id="reviewerName" required style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:12px;margin-top:5px;"></div>
+                <div class="form-group"><label>تقييمك</label><div class="rating-stars" id="ratingStars"><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span></div><input type="hidden" id="reviewRating"></div>
+                <div class="form-group"><label>تعليقك</label><textarea id="reviewComment" rows="3" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:12px;margin-top:5px;"></textarea></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">إرسال التقييم</button>
+            </form>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="container"><p>&copy; 2024 دليل خدمات الإسكندرية - جميع الحقوق محفوظة</p></div>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://gztqvuwxhjiwaxttzhtk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6dHF2dXd4aGppd2F4dHR6aHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwMDAxOTksImV4cCI6MjA5NTU3NjE5OX0.Pt7inMLxyyLFavqtgSHPQbpt4FRYK6TV5IUntoyLzT0';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentTechnician = null;
+        
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toastMessage');
+            toast.textContent = message;
+            toast.className = `toast-message ${isError ? 'error' : ''}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            showToast('✅ تم نسخ الرقم: ' + text);
+        }
+        
+        function makeCall(phone) {
+            window.location.href = `tel:${phone}`;
+        }
+        
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+        
+        async function loadTechnicianDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const technicianId = urlParams.get('id');
+            if (!technicianId) { window.location.href = 'technicians.html'; return; }
+            
+            // جلب بيانات الفني
+            const { data: tech } = await supabaseClient
+                .from('technicians')
+                .select(`*, categories:category_id (name), areas:area_id (name)`)
+                .eq('id', technicianId)
+                .single();
+            
+            if (!tech) { 
+                document.getElementById('technicianDetails').innerHTML = '<p style="text-align:center">فني غير موجود</p>'; 
+                return; 
+            }
+            
+            currentTechnician = tech;
+            
+            // جلب التقييمات
+            const { data: reviews } = await supabaseClient
+                .from('reviews')
+                .select('*')
+                .eq('technician_id', technicianId)
+                .eq('is_approved', true)
+                .order('created_at', { ascending: false });
+            
+            // حساب التقييمات بشكل صحيح
+            const totalReviews = reviews?.length || 0;
+            const avgRating = totalReviews > 0 
+                ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
+                : 0;
+            
+            const stars = '★'.repeat(Math.floor(avgRating)) + '☆'.repeat(5 - Math.floor(avgRating));
+            const avatarHtml = tech.avatar_url ? `<img src="${tech.avatar_url}" alt="${tech.full_name}">` : '<i class="fas fa-user-cog"></i>';
+            
+            document.getElementById('technicianDetails').innerHTML = `
+                <div class="technician-details">
+                    <div class="details-header">
+                        <div class="details-image">
+                            ${avatarHtml}
+                            ${tech.is_featured ? '<span class="featured-badge">⭐ مميز</span>' : ''}
+                            ${tech.is_verified ? '<span class="verified-badge">✅ موثق</span>' : ''}
+                        </div>
+                        <div class="details-info">
+                            <h1>${tech.full_name}</h1>
+                            <div class="rating-large">
+                                <div class="stars">${stars}</div>
+                                <span class="rating-number">(${avgRating})</span>
+                                <span class="reviews-count">من ${totalReviews} تقييم</span>
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">📞 رقم الهاتف</span>
+                                    <div class="info-value">
+                                        <span class="phone-number-copy" onclick="copyToClipboard('${tech.phone}')">
+                                            📋 ${tech.phone}
+                                        </span>
+                                    </div>
+                                </div>
+                                ${tech.whatsapp ? `<div class="info-item"><span class="info-label">💬 واتساب</span><div class="info-value">${tech.whatsapp}</div></div>` : ''}
+                                <div class="info-item"><span class="info-label">📍 المنطقة</span><div class="info-value">${tech.areas?.name || 'غير محدد'}</div></div>
+                                <div class="info-item"><span class="info-label">🔧 التخصص</span><div class="info-value">${tech.categories?.name || 'غير محدد'}</div></div>
+                                <div class="info-item"><span class="info-label">⏱ الخبرة</span><div class="info-value">${tech.experience_years || 0} سنة</div></div>
+                                <div class="info-item"><span class="info-label">👁 المشاهدات</span><div class="info-value">${tech.views_count || 0}</div></div>
+                            </div>
+                            <div class="contact-buttons">
+                                <button onclick="makeCall('${tech.phone}')" class="btn btn-primary">📞 اتصل الآن</button>
+                                ${tech.whatsapp ? `<a href="https://wa.me/${tech.whatsapp}" target="_blank" class="btn btn-success">💬 واتساب</a>` : ''}
+                                <button onclick="copyToClipboard('${tech.phone}')" class="btn btn-outline">📋 نسخ الرقم</button>
+                                <button onclick="openReviewModal()" class="btn btn-outline">⭐ أضف تقييم</button>
+                            </div>
+                        </div>
+                    </div>
+                    ${tech.bio ? `<div class="details-bio"><h3>📖 نبذة عن الفني</h3><p>${tech.bio}</p></div>` : ''}
+                    <div class="reviews-section">
+                        <h3>💬 تقييمات العملاء</h3>
+                        ${!reviews || reviews.length === 0 ? '<p style="text-align:center;padding:20px;">لا توجد تقييمات بعد، كن أول من يقيم!</p>' : reviews.map(r => `
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <strong>👤 ${r.customer_name}</strong>
+                                    <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+                                    <span style="color:#94a3b8;font-size:12px;">${new Date(r.created_at).toLocaleDateString('ar-EG')}</span>
+                                </div>
+                                <p>💬 ${r.comment}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // تحديث عدد المشاهدات
+            await supabaseClient
+                .from('technicians')
+                .update({ views_count: (tech.views_count || 0) + 1 })
+                .eq('id', technicianId);
+        }
+        
+        function openReviewModal() { 
+            document.getElementById('reviewModal').style.display = 'block'; 
+        }
+        
+        document.querySelector('.close')?.addEventListener('click', () => {
+            document.getElementById('reviewModal').style.display = 'none';
+        });
+        
+        document.getElementById('reviewForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rating = document.getElementById('reviewRating').value;
+            if (!rating) { 
+                showToast('⚠️ الرجاء اختيار تقييم', true); 
+                return; 
+            }
+            
+            const { error } = await supabaseClient
+                .from('reviews')
+                .insert({
+                    technician_id: currentTechnician?.id,
+                    customer_name: document.getElementById('reviewerName').value,
+                    rating: parseInt(rating),
+                    comment: document.getElementById('reviewComment').value,
+                    is_approved: true
+                });
+            
+            if (error) {
+                showToast('❌ حدث خطأ في إرسال التقييم', true);
+            } else {
+                showToast('✅ شكراً لتقييمك!');
+                document.getElementById('reviewModal').style.display = 'none';
+                setTimeout(() => location.reload(), 1000);
+            }
+        });
+        
+        // نجوم التقييم
+        const starsElements = document.querySelectorAll('.star');
+        starsElements?.forEach(star => {
+            star.addEventListener('click', () => {
+                const rating = star.dataset.rating;
+                document.getElementById('reviewRating').value = rating;
+                starsElements.forEach(s => {
+                    if (parseInt(s.dataset.rating) <= rating) {
+                        s.classList.add('active');
+                        s.textContent = '★';
+                    } else {
+                        s.classList.remove('active');
+                        s.textContent = '☆';
+                    }
+                });
+            });
+        });
+        
+        function checkUser() {
+            const currentUser = localStorage.getItem('currentUser');
+            const authLinks = document.getElementById('authLinks');
+            if (authLinks && currentUser) {
+                const user = JSON.parse(currentUser);
+                authLinks.innerHTML = `<a href="dashboard.html">👤 ${user.fullName}</a><a href="#" onclick="logout()">🚪 تسجيل خروج</a>`;
+            }
+        }
+        
+        function logout() { 
+            localStorage.removeItem('currentUser'); 
+            window.location.href = 'index.html'; 
+        }
+        
+        document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+            document.getElementById('navMenu').classList.toggle('active');
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => { 
+            checkUser(); 
+            loadTechnicianDetails(); 
+        });
+    </script>
+</body>
+</html>
